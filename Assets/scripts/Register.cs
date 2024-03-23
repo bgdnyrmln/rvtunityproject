@@ -13,6 +13,7 @@ public class Register : MonoBehaviour
     public InputField passwordInput;
     public Button registerButton;
     public Button goToLoginButton;
+    public Button togglePasswordVisibilityButton;
 
     ArrayList credentials;
 
@@ -21,6 +22,7 @@ public class Register : MonoBehaviour
     {
         registerButton.onClick.AddListener(writeStuffToFile);
         goToLoginButton.onClick.AddListener(goToLoginScene);
+        togglePasswordVisibilityButton.onClick.AddListener(TogglePasswordVisibility);
 
         if (File.Exists(Application.dataPath + "/credentials.txt"))
         {
@@ -38,6 +40,20 @@ public class Register : MonoBehaviour
         SceneManager.LoadScene("Login");
     }
 
+    void TogglePasswordVisibility()
+    {
+        if (passwordInput.contentType == InputField.ContentType.Password)
+        {
+            passwordInput.contentType = InputField.ContentType.Standard;
+        }
+        else
+        {
+            passwordInput.contentType = InputField.ContentType.Password;
+        }
+
+        passwordInput.ForceLabelUpdate();
+        passwordInput.text = passwordInput.text;
+    }
 
     void writeStuffToFile()
     {

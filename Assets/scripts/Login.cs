@@ -13,6 +13,7 @@ public class Login : MonoBehaviour
     public InputField passwordInput;
     public Button loginButton;
     public Button goToRegisterButton;
+    public Button togglePasswordVisibilityButton;
 
     ArrayList credentials;
 
@@ -21,6 +22,7 @@ public class Login : MonoBehaviour
     {
         loginButton.onClick.AddListener(login);
         goToRegisterButton.onClick.AddListener(moveToRegister);
+        togglePasswordVisibilityButton.onClick.AddListener(TogglePasswordVisibility);
 
         if (File.Exists(Application.dataPath + "/credentials.txt"))
         {
@@ -65,6 +67,20 @@ public class Login : MonoBehaviour
         {
             Debug.Log("Incorrect credentials");
         }
+    }
+    void TogglePasswordVisibility()
+    {
+        if (passwordInput.contentType == InputField.ContentType.Password)
+        {
+            passwordInput.contentType = InputField.ContentType.Standard;
+        }
+        else
+        {
+            passwordInput.contentType = InputField.ContentType.Password;
+        }
+
+        passwordInput.ForceLabelUpdate();
+        passwordInput.text = passwordInput.text;
     }
 
     void moveToRegister()
