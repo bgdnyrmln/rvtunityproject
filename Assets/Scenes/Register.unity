@@ -1304,6 +1304,10 @@ MonoBehaviour:
   registerButton: {fileID: 1773738438}
   goToLoginButton: {fileID: 1652001926}
   togglePasswordVisibilityButton: {fileID: 469451895}
+  qsize: 1
+  x: 627
+  y: 235
+  z: 1000
 --- !u!1 &1652001925
 GameObject:
   m_ObjectHideFlags: 0

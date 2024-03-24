@@ -15,6 +15,14 @@ public class Register : MonoBehaviour
     public Button goToLoginButton;
     public Button togglePasswordVisibilityButton;
 
+    // number of messages to keep
+    public uint qsize = 1;
+    public int x = 610;
+    public int y = 235;
+    public int z = 1000;
+    
+
+
     ArrayList credentials;
 
     // Start is called before the first frame update
@@ -79,6 +87,30 @@ public class Register : MonoBehaviour
             File.WriteAllLines(Application.dataPath + "/credentials.txt", (String[])credentials.ToArray(typeof(string)));
             Debug.Log("Account Registered");
         }
+    }
+
+    Queue myLogQueue = new Queue();
+
+    void OnEnable() {
+        Application.logMessageReceived += HandleLog;
+    }
+
+    void OnDisable() {
+        Application.logMessageReceived -= HandleLog;
+    }
+
+    void HandleLog(string logString, string stackTrace, LogType type) {
+        myLogQueue.Enqueue(logString);
+        if (type == LogType.Exception)
+            myLogQueue.Enqueue(stackTrace);
+        while (myLogQueue.Count > qsize)
+            myLogQueue.Dequeue();
+    }
+
+    void OnGUI() {
+        GUILayout.BeginArea(new Rect(Screen.width - x, y, z, Screen.height));
+        GUILayout.Label("\n" + string.Join("\n", myLogQueue.ToArray()));
+        GUILayout.EndArea();
     }
 
 

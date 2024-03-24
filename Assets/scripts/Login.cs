@@ -14,8 +14,13 @@ public class Login : MonoBehaviour
     public Button loginButton;
     public Button goToRegisterButton;
     public Button togglePasswordVisibilityButton;
-
+    // number of messages to keep
+    public uint qsize = 1;
+    public int x = 610;
+    public int y = 235;
+    public int z = 1000;
     ArrayList credentials;
+
 
     // Start is called before the first frame update
     void Start()
@@ -32,7 +37,6 @@ public class Login : MonoBehaviour
         {
             Debug.Log("Credential file doesn't exist");
         }
-
     }
 
 
@@ -91,5 +95,30 @@ public class Login : MonoBehaviour
     void loadWelcomeScreen()
     {
         SceneManager.LoadScene("WelcomeScreen");
+    }
+
+
+    Queue myLogQueue = new Queue();
+
+    void OnEnable() {
+        Application.logMessageReceived += HandleLog;
+    }
+
+    void OnDisable() {
+        Application.logMessageReceived -= HandleLog;
+    }
+
+    void HandleLog(string logString, string stackTrace, LogType type) {
+        myLogQueue.Enqueue(logString);
+        if (type == LogType.Exception)
+            myLogQueue.Enqueue(stackTrace);
+        while (myLogQueue.Count > qsize)
+            myLogQueue.Dequeue();
+    }
+
+    void OnGUI() {
+        GUILayout.BeginArea(new Rect(Screen.width - x, y, z, Screen.height));
+        GUILayout.Label("\n" + string.Join("\n", myLogQueue.ToArray()));
+        GUILayout.EndArea();
     }
 }
