@@ -45,17 +45,13 @@ public class Login : MonoBehaviour
     void login()
     {
         bool isExists = false;
-
-        credentials = new ArrayList(File.ReadAllLines(Application.dataPath + "/credentials.txt"));
+        ArrayList credentials = new ArrayList(File.ReadAllLines(Application.dataPath + "/credentials.txt"));
 
         foreach (var i in credentials)
         {
             string line = i.ToString();
-            //Debug.Log(line);
-            //Debug.Log(line.Substring(11));
-            //substring 0-indexof(:) - indexof(:)+1 - i.length-1
-            if (i.ToString().Substring(0, i.ToString().IndexOf(":")).Equals(usernameInput.text) &&
-                i.ToString().Substring(i.ToString().IndexOf(":") + 1).Equals(passwordInput.text))
+            if (line.Substring(0, line.IndexOf(":")).Equals(usernameInput.text) &&
+                line.Substring(line.IndexOf(":") + 1).Equals(passwordInput.text))
             {
                 isExists = true;
                 break;
@@ -65,6 +61,7 @@ public class Login : MonoBehaviour
         if (isExists)
         {
             Debug.Log($"Logging in '{usernameInput.text}'");
+            PlayerPrefs.SetString("Username", usernameInput.text); // Save username
             loadNotepad();
         }
         else

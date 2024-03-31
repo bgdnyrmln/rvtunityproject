@@ -25,7 +25,8 @@ public class SaveLoad : MonoBehaviour
         StartCoroutine(SaveTextRoll());
 
         // Save to file
-        string fileName = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
+        string username = PlayerPrefs.GetString("Username", "UnknownUser");
+        string fileName = DateTime.Now.ToString("yyyyMMdd_HHmmss") + "_" + username + ".txt";
         string filePath = Path.Combine(Application.dataPath, "TextSaves", fileName);
 
         try
