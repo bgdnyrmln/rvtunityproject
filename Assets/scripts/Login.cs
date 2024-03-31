@@ -65,7 +65,7 @@ public class Login : MonoBehaviour
         if (isExists)
         {
             Debug.Log($"Logging in '{usernameInput.text}'");
-            loadWelcomeScreen();
+            loadNotepad();
         }
         else
         {
@@ -92,9 +92,9 @@ public class Login : MonoBehaviour
         SceneManager.LoadScene("Register");
     }
 
-    void loadWelcomeScreen()
+    void loadNotepad()
     {
-        SceneManager.LoadScene("WelcomeScreen");
+        SceneManager.LoadScene("Notepad");
     }
 
 
