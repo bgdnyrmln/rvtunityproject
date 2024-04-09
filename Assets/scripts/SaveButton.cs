@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using System;
 using System.IO;
 using UnityEngine;
@@ -26,13 +27,12 @@ public class SaveLoad : MonoBehaviour
 
         // Save to file
         string username = PlayerPrefs.GetString("Username", "UnknownUser");
-        string fileName = DateTime.Now.ToString("yyyyMMdd_HHmmss") + "_" + username + ".txt";
-        string filePath = Path.Combine(Application.dataPath, "TextSaves", fileName);
+        string path = EditorUtility.SaveFilePanel("Save txt", "", DateTime.Now.ToString("yyyyMMdd_HHmmss") + "_" + username + ".txt", "txt");
 
         try
         {
-            File.WriteAllText(filePath, theText);
-            Debug.Log("Note saved to: " + filePath);
+            File.WriteAllText(path, theText);
+            Debug.Log("Note saved to: " + path);
         }
         catch (Exception e)
         {
