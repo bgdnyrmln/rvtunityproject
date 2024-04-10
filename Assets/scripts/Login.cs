@@ -5,6 +5,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEditor;
 
 public class Login : MonoBehaviour
 {
@@ -14,11 +15,14 @@ public class Login : MonoBehaviour
     public Button loginButton;
     public Button goToRegisterButton;
     public Button togglePasswordVisibilityButton;
-    // number of messages to keep
+    public GameObject fileSelectionPanel;
+    public Button openExistingFileButton;
+    public Button skipButton;
     public uint qsize = 1;
     public int x = 610;
     public int y = 235;
     public int z = 1000;
+
     ArrayList credentials;
 
 
@@ -37,6 +41,11 @@ public class Login : MonoBehaviour
         {
             Debug.Log("Credential file doesn't exist");
         }
+        fileSelectionPanel.SetActive(false); // Initially hide the file selection panel
+
+        // Add listeners for file selection buttons
+        openExistingFileButton.onClick.AddListener(OpenExistingFile);
+        skipButton.onClick.AddListener(SkipFileSelection);
     }
 
 
@@ -62,7 +71,7 @@ public class Login : MonoBehaviour
         {
             Debug.Log($"Logging in '{usernameInput.text}'");
             PlayerPrefs.SetString("Username", usernameInput.text); // Save username
-            loadNotepad();
+            fileSelectionPanel.SetActive(true); // Show file selection panel
         }
         else
         {
@@ -88,8 +97,20 @@ public class Login : MonoBehaviour
     {
         SceneManager.LoadScene("Register");
     }
+    void OpenExistingFile()
+    {
+        string path = EditorUtility.OpenFilePanel("Overwrite with txt", "", "txt");
+        if (path.Length != 0)
+        {
+            var fileContent = File.ReadAllBytes(path);
+            var fileContentString = System.Text.Encoding.UTF8.GetString(fileContent);
+            PlayerPrefs.SetString("NoteContents", fileContentString);
+            Debug.Log(fileContentString);
+            SceneManager.LoadScene("Notepad");
+        }
+    }
 
-    void loadNotepad()
+    void SkipFileSelection()
     {
         SceneManager.LoadScene("Notepad");
     }
