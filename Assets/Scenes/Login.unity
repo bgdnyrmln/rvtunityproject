@@ -1320,7 +1320,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -6.736145, y: -20.284698}
+  m_AnchoredPosition: {x: 0, y: -45}
   m_SizeDelta: {x: 1579.2258, y: 1085.2388}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1191823369
@@ -1486,10 +1486,9 @@ MonoBehaviour:
   loginButton: {fileID: 1639525495}
   goToRegisterButton: {fileID: 925267597}
   togglePasswordVisibilityButton: {fileID: 278819435}
-  fileSelectionPanel: {fileID: 0}
-  openExistingFileButton: {fileID: 0}
-  skipButton: {fileID: 0}
-  placeHolder: {fileID: 0}
+  fileSelectionPanel: {fileID: 2013333904}
+  openExistingFileButton: {fileID: 1355907961}
+  skipButton: {fileID: 1713501849}
   qsize: 1
   x: 610
   y: 235
@@ -2068,7 +2067,7 @@ GameObject:
   - component: {fileID: 1713501850}
   - component: {fileID: 1713501849}
   m_Layer: 5
-  m_Name: Quit Button
+  m_Name: CreateFile Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2279,7 +2278,7 @@ GameObject:
   - component: {fileID: 2013333907}
   - component: {fileID: 2013333906}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: OpenExistPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2305,7 +2304,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -1.6519775, y: 30.837769}
+  m_AnchoredPosition: {x: -1, y: 12}
   m_SizeDelta: {x: -1403.304, y: -861.6756}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2013333906
