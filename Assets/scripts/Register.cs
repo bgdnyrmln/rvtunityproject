@@ -14,12 +14,11 @@ public class Register : MonoBehaviour
     public Button registerButton;
     public Button goToLoginButton;
     public Button togglePasswordVisibilityButton;
+    public Text logtext = null;
 
     // number of messages to keep
     public uint qsize = 1;
-    public int x = 610;
-    public int y = 235;
-    public int z = 1000;
+
     
 
 
@@ -83,9 +82,19 @@ public class Register : MonoBehaviour
         }
         else
         {
-            credentials.Add(usernameInput.text + ":" + passwordInput.text);
-            File.WriteAllLines(Application.dataPath + "/credentials.txt", (String[])credentials.ToArray(typeof(string)));
-            Debug.Log("Account Registered");
+            try{
+                // Write the new credentials to the file
+                credentials.Add(usernameInput.text + ":" + passwordInput.text);
+                File.WriteAllLines(Application.dataPath + "/credentials.txt", (String[])credentials.ToArray(typeof(string)));
+                // Generate a unique user directory
+                Directory.CreateDirectory(Application.dataPath + "/users/" + usernameInput.text);
+                Debug.Log("Account Registered");
+            }
+            catch (Exception e)
+            {
+                Debug.Log(e.Message);
+            }
+            
         }
     }
 
@@ -107,11 +116,16 @@ public class Register : MonoBehaviour
             myLogQueue.Dequeue();
     }
 
-    void OnGUI() {
-        GUILayout.BeginArea(new Rect(Screen.width - x, y, z, Screen.height));
-        GUILayout.Label("\n" + string.Join("\n", myLogQueue.ToArray()));
-        GUILayout.EndArea();
-    }
 
+    void Update()  // Update is called every frame
+    {
+        // Update the text element with the latest log messages
+        string logText = "";
+        foreach (string message in myLogQueue)
+        {
+            logText += message + "\n";
+        }
+        logtext.text = logText;
+    }
 
 }

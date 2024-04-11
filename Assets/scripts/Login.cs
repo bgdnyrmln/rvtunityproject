@@ -18,11 +18,8 @@ public class Login : MonoBehaviour
     public GameObject fileSelectionPanel;
     public Button openExistingFileButton;
     public Button skipButton;
+    public Text logtext = null;
     public uint qsize = 1;
-    public int x = 610;
-    public int y = 235;
-    public int z = 1000;
-
     ArrayList credentials;
 
 
@@ -134,9 +131,16 @@ public class Login : MonoBehaviour
             myLogQueue.Dequeue();
     }
 
-    void OnGUI() {
-        GUILayout.BeginArea(new Rect(Screen.width - x, y, z, Screen.height));
-        GUILayout.Label("\n" + string.Join("\n", myLogQueue.ToArray()));
-        GUILayout.EndArea();
+
+    void Update()  // Update is called every frame
+    {
+        // Update the text element with the latest log messages
+        string logText = "";
+        foreach (string message in myLogQueue)
+        {
+            logText += message + "\n";
+        }
+        logtext.text = logText;
     }
+
 }
