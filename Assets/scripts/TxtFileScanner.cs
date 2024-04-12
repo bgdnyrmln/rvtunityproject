@@ -3,7 +3,7 @@ using System.IO;
 
 public class TxtFileScanner : MonoBehaviour
 {
-    public string folderPath = "Assets\TextSaves;
+    public string folderPath = "Assets/TextSaves";
     public GameObject fileObjectPrefab;
     public Transform spawnPoint; 
 
