@@ -12,20 +12,19 @@ public class SaveLoad : MonoBehaviour
     public GameObject ourNote;
     public GameObject placeHolder;
     public GameObject saveAnim;
+    public GameObject errorSaveAnim;
+
 
     void Start()
     {
-        theText = PlayerPrefs.GetString("NoteContents");
-        placeHolder.GetComponent<InputField>().text = theText;
+
     }
 
     public void SaveNote()
     {
         theText = ourNote.GetComponent<Text>().text;
         PlayerPrefs.SetString("NoteContents", theText);
-        StartCoroutine(SaveTextRoll());
 
-        // Save to file
         string username = PlayerPrefs.GetString("Username", "UnknownUser");
         string path = EditorUtility.SaveFilePanel("Save txt", "", DateTime.Now.ToString("yyyyMMdd_HHmmss") + "_" + username + ".txt", "txt");
 
@@ -33,10 +32,12 @@ public class SaveLoad : MonoBehaviour
         {
             File.WriteAllText(path, theText);
             Debug.Log("Note saved to: " + path);
+            StartCoroutine(SaveTextRoll());
         }
         catch (Exception e)
         {
             Debug.LogError("Error saving note: " + e.Message);
+            StartCoroutine(ErrorSaveTextRoll());
         }
     }
 
@@ -46,4 +47,11 @@ public class SaveLoad : MonoBehaviour
         yield return new WaitForSeconds(1);
         saveAnim.GetComponent<Animator>().Play("New State");
     }
+    IEnumerator ErrorSaveTextRoll()
+    {
+        errorSaveAnim.GetComponent<Animator>().Play("ErrorSavedAnim");
+        yield return new WaitForSeconds(1);
+        errorSaveAnim.GetComponent<Animator>().Play("New State");
+    }
 }
+
