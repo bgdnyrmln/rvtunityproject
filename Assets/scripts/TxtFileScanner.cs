@@ -3,15 +3,13 @@ using System.IO;
 
 public class TxtFileScanner : MonoBehaviour
 {
-    //СЮДА НАДО ДОБАВИТЬ ЭТУ ХУЙНЮ С ЮЗЕРНЕЙМОМ короче понял чтобы он читал юзернейм и заходил в его папку
     public static string username = "UnknownUser";
-    //public static string username = PlayerPrefs.GetString("Username", "UnknownUser");
-    public string folderPath = "Assets/users/" + username;
     public GameObject fileObjectPrefab;
-    public Transform spawnPoint; 
+    public Transform spawnPoint;
 
     void Start()
     {
+        string folderPath = "Assets/users/" + username;
         ScanTxtFiles(folderPath);
     }
 
@@ -36,7 +34,6 @@ public class TxtFileScanner : MonoBehaviour
 
     void OpenFile(string filePath)
     {
-
         System.Diagnostics.Process.Start(filePath);
     }
 }

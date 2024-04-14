@@ -96,15 +96,9 @@ public class Login : MonoBehaviour
     }
     void OpenExistingFile()
     {
-        string path = EditorUtility.OpenFilePanel("Overwrite with txt", "", "txt");
-        if (path.Length != 0)
-        {
-            var fileContent = File.ReadAllBytes(path);
-            var fileContentString = System.Text.Encoding.UTF8.GetString(fileContent);
-            PlayerPrefs.SetString("NoteContents", fileContentString);
-            Debug.Log(fileContentString);
-            SceneManager.LoadScene("Notepad");
-        }
+        string username = PlayerPrefs.GetString("Username", "UnknownUser");
+        TxtFileScanner.username = username;
+        SceneManager.LoadScene("FileChoose");
     }
 
     void SkipFileSelection()
