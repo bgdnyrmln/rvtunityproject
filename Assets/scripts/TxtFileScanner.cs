@@ -14,7 +14,8 @@ public class TxtFileScanner : MonoBehaviour
     public Transform spawnPoint;
     public Button backToLogingScreen;
     public Button createFile;
-    public GameObject createNewButton; // тут € костыль сделал два обьекта чтобы через баттон сделать листенер и через обьект сделать активным или не активным хз как иначе
+    public GameObject createNewButton; // This is the button that will be shown if there are no files in the directory
+    public GameObject placeHolder;
 
     void Start()
     {
@@ -51,7 +52,7 @@ public class TxtFileScanner : MonoBehaviour
             string fileContent = System.IO.File.ReadAllText(file);
 
             UnityEngine.UI.Button button = fileObject.GetComponentInChildren<UnityEngine.UI.Button>();
-            button.onClick.AddListener(() => LoadNotepadScene(fileContent));
+            button.onClick.AddListener(() => LoadNotepadScene(path+"/"+fileName+".txt"));
         }
     }
 
@@ -69,9 +70,13 @@ public class TxtFileScanner : MonoBehaviour
     {
         SceneManager.LoadScene("Notepad");
     }
-    void LoadNotepadScene(string content)
+    void LoadNotepadScene(string path)
     {
-        PlayerPrefs.SetString("FileContent", content);
+        var fileContent = File.ReadAllBytes(path);
+        var fileContentString = System.Text.Encoding.UTF8.GetString(fileContent);
+        PlayerPrefs.SetString("fileContentString", fileContentString);
+        PlayerPrefs.Save();
         SceneManager.LoadScene("Notepad");
     }
+
 }
