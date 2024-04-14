@@ -14,7 +14,7 @@ public class TxtFileScanner : MonoBehaviour
     public Transform spawnPoint;
     public Button backToLogingScreen;
     public Button createFile;
-    public GameObject createNewButton; // Reference to the GameObject of the CreateNew button
+    public GameObject createNewButton; // тут € костыль сделал два обьекта чтобы через баттон сделать листенер и через обьект сделать активным или не активным хз как иначе
 
     void Start()
     {
@@ -47,7 +47,11 @@ public class TxtFileScanner : MonoBehaviour
             fileObject.transform.SetParent(spawnPoint);
             string fileName = Path.GetFileNameWithoutExtension(file);
             fileObject.GetComponentInChildren<UnityEngine.UI.Button>().GetComponentInChildren<TMPro.TextMeshProUGUI>().text = fileName;
-            fileObject.GetComponentInChildren<UnityEngine.UI.Button>().onClick.AddListener(() => OpenFile(file));
+
+            string fileContent = System.IO.File.ReadAllText(file);
+
+            UnityEngine.UI.Button button = fileObject.GetComponentInChildren<UnityEngine.UI.Button>();
+            button.onClick.AddListener(() => LoadNotepadScene(fileContent));
         }
     }
 
@@ -63,6 +67,11 @@ public class TxtFileScanner : MonoBehaviour
 
     void createFileAction()
     {
+        SceneManager.LoadScene("Notepad");
+    }
+    void LoadNotepadScene(string content)
+    {
+        PlayerPrefs.SetString("FileContent", content);
         SceneManager.LoadScene("Notepad");
     }
 }

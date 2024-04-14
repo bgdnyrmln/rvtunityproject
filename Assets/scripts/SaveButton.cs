@@ -17,11 +17,13 @@ public class SaveLoad : MonoBehaviour
 
     void Start()
     {
-
+        string savedNoteContent = PlayerPrefs.GetString("FileContent", "");
+        ourNote.GetComponent<Text>().text = savedNoteContent;
     }
 
     public void SaveNote()
     {
+
         theText = ourNote.GetComponent<Text>().text;
         PlayerPrefs.SetString("NoteContents", theText);
 
@@ -54,4 +56,3 @@ public class SaveLoad : MonoBehaviour
         errorSaveAnim.GetComponent<Animator>().Play("New State");
     }
 }
-
