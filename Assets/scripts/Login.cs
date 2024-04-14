@@ -103,6 +103,8 @@ public class Login : MonoBehaviour
 
     void SkipFileSelection()
     {
+        PlayerPrefs.SetString("", "");
+        PlayerPrefs.Save();
         SceneManager.LoadScene("Notepad");
     }
 
