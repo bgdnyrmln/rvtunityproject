@@ -16,6 +16,8 @@ public class TxtFileScanner : MonoBehaviour
     public Button createFile;
     public Button SortByName;
     public Button SortByDate;
+    public TMP_InputField searchInput; // Add TMP_InputField for search
+    public Button searchButton; // Add Button for search
     public GameObject createNewButton;
     public GameObject placeHolder;
     public float buttonWidth = 100f;
@@ -29,12 +31,19 @@ public class TxtFileScanner : MonoBehaviour
         createFile.onClick.AddListener(createFileAction);
         SortByName.onClick.AddListener(SortByNameFunction);
         SortByDate.onClick.AddListener(SortByDateFunction);
+        searchButton.onClick.AddListener(SearchFiles); // Add listener for search button click
         string folderPath = "Assets/users/" + username;
         ScanTxtFiles(folderPath);
     }
 
     void ScanTxtFiles(string path)
     {
+        // Clear existing buttons
+        foreach (Transform child in spawnPoint)
+        {
+            Destroy(child.gameObject);
+        }
+
         if (!Directory.Exists(path))
         {
             Debug.LogError("Directory does not exist: " + path);
@@ -51,6 +60,10 @@ public class TxtFileScanner : MonoBehaviour
 
         // Sort files by name
         Array.Sort(files, (a, b) => string.Compare(Path.GetFileNameWithoutExtension(a), Path.GetFileNameWithoutExtension(b)));
+
+        // Filter files based on search input
+        string searchText = searchInput.text.Trim().ToLower();
+        files = Array.FindAll(files, file => Path.GetFileNameWithoutExtension(file).ToLower().Contains(searchText));
 
         float panelWidth = spawnPoint.GetComponent<RectTransform>().rect.width;
         float panelHeight = spawnPoint.GetComponent<RectTransform>().rect.height;
@@ -166,6 +179,12 @@ public class TxtFileScanner : MonoBehaviour
         {
             sortedButtons[i].SetSiblingIndex(i);
         }
+    }
+
+    void SearchFiles()
+    {
+        string folderPath = "Assets/users/" + username;
+        ScanTxtFiles(folderPath);
     }
 
     string GetFilePath(Transform button)
