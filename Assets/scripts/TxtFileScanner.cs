@@ -1,11 +1,10 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using TMPro;
+using System.IO;
+using UnityEngine.SceneManagement;
+using System;
+using System.Collections.Generic;
 
 public class TxtFileScanner : MonoBehaviour
 {
@@ -16,14 +15,18 @@ public class TxtFileScanner : MonoBehaviour
     public Button createFile;
     public Button SortByName;
     public Button SortByDate;
-    public TMP_InputField searchInput; // Add TMP_InputField for search
-    public Button searchButton; // Add Button for search
+    public TMP_InputField searchInput;
+    public Button searchButton;
     public GameObject createNewButton;
     public GameObject placeHolder;
     public float buttonWidth = 100f;
     public float buttonHeight = 60f;
     public float verticalGap = 15f;
-    public GameObject deleteButtonPrefab; // Add reference to the delete button prefab
+    public Scrollbar scrollbar;
+    public GameObject deleteButtonPrefab;
+
+    private string lastSearchText = "";
+    private List<GameObject> fileObjects = new List<GameObject>();
 
     void Start()
     {
@@ -31,23 +34,54 @@ public class TxtFileScanner : MonoBehaviour
         createFile.onClick.AddListener(createFileAction);
         SortByName.onClick.AddListener(SortByNameFunction);
         SortByDate.onClick.AddListener(SortByDateFunction);
-        searchButton.onClick.AddListener(SearchFiles); // Add listener for search button click
+        searchButton.onClick.AddListener(SearchFiles);
+        scrollbar.onValueChanged.AddListener(UpdateButtonPositions);
         string folderPath = "Assets/users/" + username;
         ScanTxtFiles(folderPath);
     }
 
-    void ScanTxtFiles(string path)
+    void UpdateButtonPositions(float value)
     {
-        // Clear existing buttons
+        float panelHeight = spawnPoint.GetComponent<RectTransform>().rect.height;
+        float totalButtonHeight = (buttonHeight + verticalGap) * fileObjects.Count - verticalGap;
+        float scrollableHeight = totalButtonHeight - panelHeight;
+
+        float yOffset = scrollableHeight * value;
+
+        foreach (GameObject fileObject in fileObjects)
+        {
+            RectTransform fileObjectRectTransform = fileObject.GetComponent<RectTransform>();
+
+            float xPos = (spawnPoint.GetComponent<RectTransform>().rect.width - buttonWidth) / 2f;
+            float yPos = yOffset;
+
+            fileObjectRectTransform.anchoredPosition = new Vector2(xPos, yPos);
+            yOffset -= buttonHeight + verticalGap;
+
+            // Set button size
+            fileObjectRectTransform.sizeDelta = new Vector2(buttonWidth, buttonHeight);
+        }
+    }
+
+    void Update()
+    {
+        UpdateButtonPositions(scrollbar.value);
+    }
+
+    void ScanTxtFiles(string path, string searchText = "")
+    {
         foreach (Transform child in spawnPoint)
         {
             Destroy(child.gameObject);
         }
 
+        fileObjects.Clear();
+
         if (!Directory.Exists(path))
         {
             Debug.LogError("Directory does not exist: " + path);
             createNewButton.SetActive(true);
+            UpdateButtonPositions(0f);
             return;
         }
 
@@ -55,50 +89,24 @@ public class TxtFileScanner : MonoBehaviour
         if (files.Length == 0)
         {
             createNewButton.SetActive(true);
+            UpdateButtonPositions(0f);
             return;
         }
 
-        // Sort files by name
         Array.Sort(files, (a, b) => string.Compare(Path.GetFileNameWithoutExtension(a), Path.GetFileNameWithoutExtension(b)));
 
-        // Filter files based on search input
-        string searchText = searchInput.text.Trim().ToLower();
-        files = Array.FindAll(files, file => Path.GetFileNameWithoutExtension(file).ToLower().Contains(searchText));
-
-        float panelWidth = spawnPoint.GetComponent<RectTransform>().rect.width;
-        float panelHeight = spawnPoint.GetComponent<RectTransform>().rect.height;
-        float totalButtonHeight = (buttonHeight + verticalGap) * files.Length - verticalGap; // Calculate total height of all buttons
-        float totalButtonWidth = buttonWidth; // Buttons are same width, so total width is constant
-
-        float xOffset = (panelWidth - totalButtonWidth) / 2f; // Calculate the horizontal offset to center buttons
-        float yOffset = (panelHeight - totalButtonHeight) / 2f; // Calculate the vertical offset to center buttons
-
-        GameObject lastButton = null;
+        if (!string.IsNullOrEmpty(searchText))
+        {
+            files = Array.FindAll(files, file => Path.GetFileNameWithoutExtension(file).ToLower().Contains(searchText.ToLower()));
+        }
 
         foreach (string file in files)
         {
             GameObject fileObject = Instantiate(fileObjectPrefab, Vector3.zero, Quaternion.identity);
-            fileObject.transform.SetParent(spawnPoint, false); // Ensure local position is correctly set
+            fileObject.transform.SetParent(spawnPoint, false);
             string fileName = Path.GetFileNameWithoutExtension(file);
             fileObject.GetComponentInChildren<TextMeshProUGUI>().text = fileName;
-
-            // Set the size of the button
-            RectTransform fileObjectRectTransform = fileObject.GetComponent<RectTransform>();
-            fileObjectRectTransform.sizeDelta = new Vector2(buttonWidth, buttonHeight);
-
-            // Set button position
-            if (lastButton == null)
-            {
-                // First button
-                fileObjectRectTransform.anchoredPosition = new Vector2(xOffset, yOffset);
-            }
-            else
-            {
-                // Subsequent buttons
-                RectTransform lastButtonRectTransform = lastButton.GetComponent<RectTransform>();
-                float newY = lastButtonRectTransform.anchoredPosition.y - buttonHeight - verticalGap;
-                fileObjectRectTransform.anchoredPosition = new Vector2(xOffset, newY);
-            }
+            fileObjects.Add(fileObject);
 
             // Instantiate delete button
             GameObject deleteButton = Instantiate(deleteButtonPrefab, fileObject.transform);
@@ -109,21 +117,31 @@ public class TxtFileScanner : MonoBehaviour
             deleteButtonRectTransform.anchoredPosition = new Vector2(buttonWidth / 2 + 15f, 0); // Set delete button position
             deleteButtonRectTransform.sizeDelta = new Vector2(buttonHeight, buttonHeight); // Make the delete button square
 
+            // Add listener to delete button
             Button deleteButtonComponent = deleteButton.GetComponent<Button>();
             deleteButtonComponent.onClick.AddListener(() => DeleteFile(file));
 
+            // Add listener to file object button
             Button button = fileObject.GetComponentInChildren<Button>();
             button.onClick.AddListener(() => LoadNotepadScene(file));
-
-            lastButton = fileObject;
         }
+
+        UpdateButtonPositions(scrollbar.value);
+    }
+
+    void SearchFiles()
+    {
+        string folderPath = "Assets/users/" + username;
+        string searchText = searchInput.text.Trim();
+        lastSearchText = searchText;
+        ScanTxtFiles(folderPath, searchText);
     }
 
     void DeleteFile(string filePath)
     {
         File.Delete(filePath);
-        // Reload the scene or update the file list
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        string folderPath = "Assets/users/" + username;
+        ScanTxtFiles(folderPath, lastSearchText);
     }
 
     void backToLogin()
@@ -147,8 +165,6 @@ public class TxtFileScanner : MonoBehaviour
 
     void SortByNameFunction()
     {
-        Debug.Log("Sort by name");
-        // Sort the buttons by name
         List<Transform> sortedButtons = new List<Transform>();
         foreach (Transform button in spawnPoint)
         {
@@ -156,7 +172,6 @@ public class TxtFileScanner : MonoBehaviour
         }
         sortedButtons.Sort((a, b) => string.Compare(a.GetComponentInChildren<TextMeshProUGUI>().text, b.GetComponentInChildren<TextMeshProUGUI>().text));
 
-        // Re-arrange the buttons
         for (int i = 0; i < sortedButtons.Count; i++)
         {
             sortedButtons[i].SetSiblingIndex(i);
@@ -165,8 +180,6 @@ public class TxtFileScanner : MonoBehaviour
 
     void SortByDateFunction()
     {
-        Debug.Log("Sort by date");
-        // Sort the buttons by creation date
         List<Transform> sortedButtons = new List<Transform>();
         foreach (Transform button in spawnPoint)
         {
@@ -174,22 +187,14 @@ public class TxtFileScanner : MonoBehaviour
         }
         sortedButtons.Sort((a, b) => File.GetLastWriteTime(GetFilePath(a)).CompareTo(File.GetLastWriteTime(GetFilePath(b))));
 
-        // Re-arrange the buttons
         for (int i = 0; i < sortedButtons.Count; i++)
         {
             sortedButtons[i].SetSiblingIndex(i);
         }
     }
 
-    void SearchFiles()
-    {
-        string folderPath = "Assets/users/" + username;
-        ScanTxtFiles(folderPath);
-    }
-
     string GetFilePath(Transform button)
     {
-        // Extract the file path from the button's text
         string buttonText = button.GetComponentInChildren<TextMeshProUGUI>().text;
         return "Assets/users/" + username + "/" + buttonText + ".txt";
     }
