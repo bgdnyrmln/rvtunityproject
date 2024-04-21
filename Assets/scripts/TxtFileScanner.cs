@@ -22,8 +22,13 @@ public class TxtFileScanner : MonoBehaviour
     public float buttonWidth = 100f;
     public float buttonHeight = 60f;
     public float verticalGap = 15f;
-    public Scrollbar scrollbar;
     public GameObject deleteButtonPrefab;
+    private int currentPage = 0;
+    private int filesPerPage = 6;
+    private int totalFilesCount = 0;
+    private string[] files;
+    public Button NextPageButton;
+    public Button PreviousPageButton;
 
     private string lastSearchText = "";
     private List<GameObject> fileObjects = new List<GameObject>();
@@ -35,9 +40,11 @@ public class TxtFileScanner : MonoBehaviour
         SortByName.onClick.AddListener(SortByNameFunction);
         SortByDate.onClick.AddListener(SortByDateFunction);
         searchButton.onClick.AddListener(SearchFiles);
-        scrollbar.onValueChanged.AddListener(UpdateButtonPositions);
+        NextPageButton.onClick.AddListener(NextPage);
+        PreviousPageButton.onClick.AddListener(PreviousPage);
         string folderPath = "Assets/users/" + username;
         ScanTxtFiles(folderPath);
+        UpdatePagination();
     }
 
     void UpdateButtonPositions(float value)
@@ -63,11 +70,6 @@ public class TxtFileScanner : MonoBehaviour
         }
     }
 
-    void Update()
-    {
-        UpdateButtonPositions(scrollbar.value);
-    }
-
     void ScanTxtFiles(string path, string searchText = "")
     {
         foreach (Transform child in spawnPoint)
@@ -85,7 +87,8 @@ public class TxtFileScanner : MonoBehaviour
             return;
         }
 
-        string[] files = Directory.GetFiles(path, "*.txt");
+        files = Directory.GetFiles(path, "*.txt");
+
         if (files.Length == 0)
         {
             createNewButton.SetActive(true);
@@ -100,8 +103,16 @@ public class TxtFileScanner : MonoBehaviour
             files = Array.FindAll(files, file => Path.GetFileNameWithoutExtension(file).ToLower().Contains(searchText.ToLower()));
         }
 
-        foreach (string file in files)
+        totalFilesCount = files.Length;
+        UpdatePagination();
+
+        int startIndex = currentPage * filesPerPage;
+        int endIndex = Mathf.Min(startIndex + filesPerPage, totalFilesCount);
+
+        for (int i = startIndex; i < endIndex; i++)
         {
+            string file = files[i];
+
             GameObject fileObject = Instantiate(fileObjectPrefab, Vector3.zero, Quaternion.identity);
             fileObject.transform.SetParent(spawnPoint, false);
             string fileName = Path.GetFileNameWithoutExtension(file);
@@ -125,8 +136,6 @@ public class TxtFileScanner : MonoBehaviour
             Button button = fileObject.GetComponentInChildren<Button>();
             button.onClick.AddListener(() => LoadNotepadScene(file));
         }
-
-        UpdateButtonPositions(scrollbar.value);
     }
 
     void SearchFiles()
@@ -165,37 +174,73 @@ public class TxtFileScanner : MonoBehaviour
 
     void SortByNameFunction()
     {
-        List<Transform> sortedButtons = new List<Transform>();
-        foreach (Transform button in spawnPoint)
-        {
-            sortedButtons.Add(button);
-        }
-        sortedButtons.Sort((a, b) => string.Compare(a.GetComponentInChildren<TextMeshProUGUI>().text, b.GetComponentInChildren<TextMeshProUGUI>().text));
-
-        for (int i = 0; i < sortedButtons.Count; i++)
-        {
-            sortedButtons[i].SetSiblingIndex(i);
-        }
+        Array.Sort(files, (a, b) => string.Compare(Path.GetFileNameWithoutExtension(a), Path.GetFileNameWithoutExtension(b)));
+        UpdatePagination();
     }
 
     void SortByDateFunction()
     {
-        List<Transform> sortedButtons = new List<Transform>();
-        foreach (Transform button in spawnPoint)
-        {
-            sortedButtons.Add(button);
-        }
-        sortedButtons.Sort((a, b) => File.GetLastWriteTime(GetFilePath(a)).CompareTo(File.GetLastWriteTime(GetFilePath(b))));
+        Array.Sort(files, (a, b) => File.GetLastWriteTime(a).CompareTo(File.GetLastWriteTime(b)));
+        UpdatePagination();
+    }
 
-        for (int i = 0; i < sortedButtons.Count; i++)
+    void UpdatePagination()
+    {
+        int totalPages = Mathf.CeilToInt((float)totalFilesCount / filesPerPage);
+        currentPage = Mathf.Clamp(currentPage, 0, totalPages - 1);
+        UpdateDisplayedFiles();
+    }
+
+    void UpdateDisplayedFiles()
+    {
+        int startIndex = currentPage * filesPerPage;
+        int endIndex = Mathf.Min(startIndex + filesPerPage, totalFilesCount);
+
+        // Clear previously displayed files before updating
+        foreach (Transform child in spawnPoint)
         {
-            sortedButtons[i].SetSiblingIndex(i);
+            Destroy(child.gameObject);
+        }
+        fileObjects.Clear();
+
+        for (int i = startIndex; i < endIndex; i++)
+        {
+            string file = files[i];
+
+            GameObject fileObject = Instantiate(fileObjectPrefab, Vector3.zero, Quaternion.identity);
+            fileObject.transform.SetParent(spawnPoint, false);
+            string fileName = Path.GetFileNameWithoutExtension(file);
+            fileObject.GetComponentInChildren<TextMeshProUGUI>().text = fileName;
+            fileObjects.Add(fileObject);
+
+            // Instantiate delete button
+            GameObject deleteButton = Instantiate(deleteButtonPrefab, fileObject.transform);
+            RectTransform deleteButtonRectTransform = deleteButton.GetComponent<RectTransform>();
+            deleteButtonRectTransform.anchorMin = new Vector2(1, 0.5f); // Align to right
+            deleteButtonRectTransform.anchorMax = new Vector2(1, 0.5f); // Align to right
+            deleteButtonRectTransform.pivot = new Vector2(1, 0.5f); // Align to right
+            deleteButtonRectTransform.anchoredPosition = new Vector2(buttonWidth / 2 + 15f, 0); // Set delete button position
+            deleteButtonRectTransform.sizeDelta = new Vector2(buttonHeight, buttonHeight); // Make the delete button square
+
+            // Add listener to delete button
+            Button deleteButtonComponent = deleteButton.GetComponent<Button>();
+            deleteButtonComponent.onClick.AddListener(() => DeleteFile(file));
+
+            // Add listener to file object button
+            Button button = fileObject.GetComponentInChildren<Button>();
+            button.onClick.AddListener(() => LoadNotepadScene(file));
         }
     }
 
-    string GetFilePath(Transform button)
+    void NextPage()
     {
-        string buttonText = button.GetComponentInChildren<TextMeshProUGUI>().text;
-        return "Assets/users/" + username + "/" + buttonText + ".txt";
+        currentPage++;
+        UpdatePagination();
+    }
+
+    void PreviousPage()
+    {
+        currentPage--;
+        UpdatePagination();
     }
 }
