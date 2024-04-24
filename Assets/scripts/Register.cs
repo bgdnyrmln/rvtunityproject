@@ -146,8 +146,8 @@ public class Register : MonoBehaviour
         {
             try
             {
-                credentials.Add(username);string credentialLine = username + ":" + password + "\n"; // Include newline character
-                File.AppendAllText(Application.dataPath + "/credentials.txt", credentialLine);
+                credentials.Add(username);
+                File.AppendAllText(Application.dataPath + "/credentials.txt", username + "\n");
                 Directory.CreateDirectory(Application.dataPath + "/users/" + username);
                 Debug.Log("Account Registered");
             }
