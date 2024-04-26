@@ -1,19 +1,14 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
-using System;
-using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
+using System.Collections;
 
 public class SaveLoad : MonoBehaviour
 {
     public string theText;
     public GameObject ourNote;
-    public GameObject placeHolder;
     public GameObject saveAnim;
     public GameObject errorSaveAnim;
-
 
     void Start()
     {
@@ -23,22 +18,18 @@ public class SaveLoad : MonoBehaviour
 
     public void SaveNote()
     {
-
         theText = ourNote.GetComponent<Text>().text;
         PlayerPrefs.SetString("NoteContents", theText);
 
         string username = PlayerPrefs.GetString("Username", "UnknownUser");
-        string path = EditorUtility.SaveFilePanel("Save txt", "", DateTime.Now.ToString("yyyyMMdd_HHmmss") + "_" + username + ".txt", "txt");
+        string fileName = DateTime.Now.ToString("yyyyMMdd_HHmmss") + "_" + username + ".txt";
 
-        try
+        if (FileSaver.SaveText(theText, fileName))
         {
-            File.WriteAllText(path, theText);
-            Debug.Log("Note saved to: " + path);
             StartCoroutine(SaveTextRoll());
         }
-        catch (Exception e)
+        else
         {
-            Debug.LogError("Error saving note: " + e.Message);
             StartCoroutine(ErrorSaveTextRoll());
         }
     }
@@ -49,6 +40,7 @@ public class SaveLoad : MonoBehaviour
         yield return new WaitForSeconds(1);
         saveAnim.GetComponent<Animator>().Play("New State");
     }
+
     IEnumerator ErrorSaveTextRoll()
     {
         errorSaveAnim.GetComponent<Animator>().Play("ErrorSavedAnim");

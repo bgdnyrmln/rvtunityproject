@@ -1,25 +1,33 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
-using System.IO;
 using UnityEngine.UI;
+using System.IO;
+using SFB;
 
-public class OpenFile : MonoBehaviour
+public class FileOpener : MonoBehaviour
 {
     public GameObject placeHolder;
 
-
-
-    public void Openf()
+    public void OpenFile()
     {
-        string path = EditorUtility.OpenFilePanel("Overwrite with txt", "", "txt");
-        if (path.Length != 0)
+        // Open a file dialog to select a text file
+        string path = StandaloneFileBrowser.OpenFilePanel("Open File", "", "txt", false)[0];
+
+        if (!string.IsNullOrEmpty(path))
         {
-            var fileContent = File.ReadAllBytes(path);
-            var fileContentString = System.Text.Encoding.UTF8.GetString(fileContent);
-            placeHolder.GetComponent<InputField>().text = fileContentString;
-            Debug.Log(fileContentString);
+            try
+            {
+                // Read the contents of the selected text file
+                string fileContent = File.ReadAllText(path);
+
+                // Set the text content to the input field
+                placeHolder.GetComponent<InputField>().text = fileContent;
+
+                Debug.Log("File content: " + fileContent);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError("Error reading file: " + ex.Message);
+            }
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,7 +7,6 @@ using UnityEngine.SceneManagement;
 
 public class Register : MonoBehaviour
 {
-
     public InputField usernameInput;
     public InputField passwordInput;
     public Button registerButton;
@@ -16,19 +14,16 @@ public class Register : MonoBehaviour
     public Button togglePasswordVisibilityButton;
     public Text logtext = null;
 
-    // number of messages to keep
     public uint qsize = 1;
 
-    
-
-
     ArrayList credentials;
+    bool usernameInvalid = false;
+    bool passwordInvalid = false;
 
-    // Start is called before the first frame update
     void Start()
     {
-        registerButton.onClick.AddListener(writeStuffToFile);
-        goToLoginButton.onClick.AddListener(goToLoginScene);
+        registerButton.onClick.AddListener(ValidateAndRegister);
+        goToLoginButton.onClick.AddListener(GoToLoginScene);
         togglePasswordVisibilityButton.onClick.AddListener(TogglePasswordVisibility);
 
         if (File.Exists(Application.dataPath + "/credentials.txt"))
@@ -39,76 +34,146 @@ public class Register : MonoBehaviour
         {
             File.WriteAllText(Application.dataPath + "/credentials.txt", "");
         }
-
     }
 
-    void goToLoginScene()
+    void GoToLoginScene()
     {
         SceneManager.LoadScene("Login");
     }
 
     void TogglePasswordVisibility()
     {
-        if (passwordInput.contentType == InputField.ContentType.Password)
-        {
-            passwordInput.contentType = InputField.ContentType.Standard;
-        }
-        else
-        {
-            passwordInput.contentType = InputField.ContentType.Password;
-        }
-
+        passwordInput.contentType = passwordInput.contentType == InputField.ContentType.Password ?
+            InputField.ContentType.Standard : InputField.ContentType.Password;
         passwordInput.ForceLabelUpdate();
         passwordInput.text = passwordInput.text;
     }
 
-    void writeStuffToFile()
+    void ValidateAndRegister()
     {
-        bool isExists = false;
+        string username = usernameInput.text;
+        string password = passwordInput.text;
 
-        credentials = new ArrayList(File.ReadAllLines(Application.dataPath + "/credentials.txt"));
-        foreach (var i in credentials)
+        // Reset invalid flags
+        usernameInvalid = false;
+        passwordInvalid = false;
+
+        if (!IsUsernameValid(username))
         {
-            if (i.ToString().Contains(usernameInput.text))
-            {
-                isExists = true;
-                break;
-            }
+            usernameInvalid = true;
         }
 
-        if (isExists)
+        if (!IsPasswordValid(password))
         {
-            Debug.Log($"Username '{usernameInput.text}' already exists");
+            passwordInvalid = true;
+        }
+
+        if (!usernameInvalid && !passwordInvalid)
+        {
+            RegisterUser(username, password);
         }
         else
         {
-            try{
-                // Write the new credentials to the file
-                credentials.Add(usernameInput.text + ":" + passwordInput.text);
-                File.WriteAllLines(Application.dataPath + "/credentials.txt", (String[])credentials.ToArray(typeof(string)));
-                // Generate a unique user directory
-                Directory.CreateDirectory(Application.dataPath + "/users/" + usernameInput.text);
+            if (usernameInvalid)
+            {
+                Debug.Log("Invalid username.");
+            }
+
+            if (passwordInvalid)
+            {
+                Debug.Log("Invalid password.");
+            }
+        }
+    }
+
+    bool IsUsernameValid(string username)
+    {
+        // Username should not contain special symbols
+        return !string.IsNullOrWhiteSpace(username) && !ContainsSpecialSymbols(username);
+    }
+
+    bool IsPasswordValid(string password)
+    {
+        // Password should be at least 8 characters long and contain at least one uppercase letter
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            return false;
+        }
+        else if (password.Length < 8 || !ContainsUpperCase(password))
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    bool ContainsSpecialSymbols(string str)
+    {
+        // Check if the string contains any special symbols
+        foreach (char c in str)
+        {
+            if (!char.IsLetterOrDigit(c))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool ContainsUpperCase(string str)
+    {
+        // Check if the string contains at least one uppercase letter
+        foreach (char c in str)
+        {
+            if (char.IsUpper(c))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void RegisterUser(string username, string password)
+    {
+        bool isExists = credentials.Contains(username);
+        if (isExists)
+        {
+            Debug.Log($"Username '{username}' already exists");
+        }
+        else
+        {
+            try
+            {
+                credentials.Add(username);string credentialLine = username + ":" + password + "\n"; // Include newline character
+                File.AppendAllText(Application.dataPath + "/credentials.txt", credentialLine);
+                Directory.CreateDirectory(Application.dataPath + "/users/" + username);
                 Debug.Log("Account Registered");
             }
             catch (Exception e)
             {
                 Debug.Log(e.Message);
             }
-            
         }
     }
 
+    // Log handling methods...
+
     Queue myLogQueue = new Queue();
 
-    void OnEnable() {
+    void OnEnable()
+    {
         Application.logMessageReceived += HandleLog;
     }
 
-    void OnDisable() {
+    void OnDisable()
+    {
         Application.logMessageReceived -= HandleLog;
     }
 
-    void HandleLog(string logString, string stackTrace, LogType type) {
+    void HandleLog(string logString, string stackTrace, LogType type)
+    {
         myLogQueue.Enqueue(logString);
         if (type == LogType.Exception)
             myLogQueue.Enqueue(stackTrace);
@@ -127,5 +192,4 @@ public class Register : MonoBehaviour
         }
         logtext.text = logText;
     }
-
 }

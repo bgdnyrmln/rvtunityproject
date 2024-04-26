@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEditor;
 
+
 public class Login : MonoBehaviour
 {
 
@@ -49,32 +50,48 @@ public class Login : MonoBehaviour
 
     // Update is called once per frame
     void login()
+{
+    bool isExists = false;
+
+    // Check if the credentials file exists
+    if (File.Exists(Application.dataPath + "/credentials.txt"))
     {
-        bool isExists = false;
-        ArrayList credentials = new ArrayList(File.ReadAllLines(Application.dataPath + "/credentials.txt"));
+        ArrayList credentials = new ArrayList(File.ReadAllLines("credentials.txt"));
 
         foreach (var i in credentials)
         {
             string line = i.ToString();
-            if (line.Substring(0, line.IndexOf(":")).Equals(usernameInput.text) &&
-                line.Substring(line.IndexOf(":") + 1).Equals(passwordInput.text))
+            int delimiterIndex = line.IndexOf(":");
+            if (delimiterIndex != -1 && delimiterIndex < line.Length - 1)
             {
-                isExists = true;
-                break;
+                string storedUsername = line.Substring(0, delimiterIndex);
+                string storedPassword = line.Substring(delimiterIndex + 1);
+
+                if (storedUsername.Equals(usernameInput.text) && storedPassword.Equals(passwordInput.text))
+                {
+                    isExists = true;
+                    break;
+                }
             }
         }
-
-        if (isExists)
-        {
-            Debug.Log($"Logging in '{usernameInput.text}'");
-            PlayerPrefs.SetString("Username", usernameInput.text); // Save username
-            fileSelectionPanel.SetActive(true); // Show file selection panel
-        }
-        else
-        {
-            Debug.Log("Incorrect credentials");
-        }
     }
+    else
+    {
+        Debug.Log("Credential file doesn't exist");
+    }
+
+    if (isExists)
+    {
+        Debug.Log($"Logging in '{usernameInput.text}'");
+        PlayerPrefs.SetString("Username", usernameInput.text); // Save username
+        fileSelectionPanel.SetActive(true); // Show file selection panel
+    }
+    else
+    {
+        Debug.Log("Incorrect credentials");
+    }
+}
+
     void TogglePasswordVisibility()
     {
         if (passwordInput.contentType == InputField.ContentType.Password)
