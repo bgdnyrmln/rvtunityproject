@@ -219,7 +219,7 @@ void UpdateDisplayedFiles()
     void DeleteFile(string filePath)
     {
         File.Delete(filePath);
-        string folderPath = Application.dataPath + "/users/" + username;;
+        string folderPath = Application.dataPath + "/users/" + username; 
         ScanTxtFiles(folderPath, lastSearchText);
         UpdatePagination();
     } 
@@ -231,7 +231,9 @@ void UpdateDisplayedFiles()
 
     void createFileAction()
     {
-        SceneManager.LoadScene("Notepad");
+        PlayerPrefs.SetString("FileContent", "");
+        PlayerPrefs.Save();
+        SceneManager.LoadScene("Notepad");  
     }
 
     void LoadNotepadScene(string path)
