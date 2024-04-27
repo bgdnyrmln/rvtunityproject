@@ -2,6 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Collections;
+using UnityEngine.SceneManagement;
+
+
 
 public class SaveLoad : MonoBehaviour
 {
@@ -9,11 +12,14 @@ public class SaveLoad : MonoBehaviour
     public GameObject ourNote;
     public GameObject saveAnim;
     public GameObject errorSaveAnim;
+    public Button backToLogin;
 
     void Start()
     {
         string savedNoteContent = PlayerPrefs.GetString("FileContent", "");
         ourNote.GetComponent<Text>().text = savedNoteContent;
+        backToLogin.onClick.AddListener(GoToLoginScene);
+
     }
 
     public void SaveNote()
@@ -47,4 +53,9 @@ public class SaveLoad : MonoBehaviour
         yield return new WaitForSeconds(1);
         errorSaveAnim.GetComponent<Animator>().Play("New State");
     }
+    void GoToLoginScene()
+    {
+        SceneManager.LoadScene("Login");
+    }
+
 }
