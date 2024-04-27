@@ -56,7 +56,7 @@ public class Login : MonoBehaviour
     // Check if the credentials file exists
     if (File.Exists(Application.dataPath + "/credentials.txt"))
     {
-        ArrayList credentials = new ArrayList(File.ReadAllLines("credentials.txt"));
+        ArrayList credentials = new ArrayList(File.ReadAllLines(Application.dataPath + "/credentials.txt"));
 
         foreach (var i in credentials)
         {

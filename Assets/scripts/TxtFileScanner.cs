@@ -42,7 +42,7 @@ public class TxtFileScanner : MonoBehaviour
         searchButton.onClick.AddListener(SearchFiles);
         NextPageButton.onClick.AddListener(NextPage);
         PreviousPageButton.onClick.AddListener(PreviousPage);
-        string folderPath = "Assets/users/" + username;
+        string folderPath = Path.Combine(Application.streamingAssetsPath, "users", username);
         ScanTxtFiles(folderPath);
         UpdatePagination();
     }
@@ -147,12 +147,17 @@ public class TxtFileScanner : MonoBehaviour
 
     void SearchFiles()
 {
-    string folderPath = "Assets/users/" + username;
-    string searchText = searchInput.text.Trim();
-    lastSearchText = searchText;
 
-    // Reset current page to 0 after search
-    currentPage = 0;
+        string folderPath = Path.Combine(Application.streamingAssetsPath, "users", username);
+        string searchText = searchInput.text.Trim();
+
+        lastSearchText = searchText;
+
+        Debug.Log("Searching files for: " + searchText);
+        Debug.Log("FolderPath: " + folderPath); // Add this debug log
+
+        // Reset current page to 0 after search
+        currentPage = 0;
 
     // Scan files based on search text
     ScanTxtFiles(folderPath, searchText);
@@ -214,9 +219,9 @@ void UpdateDisplayedFiles()
     void DeleteFile(string filePath)
     {
         File.Delete(filePath);
-        string folderPath = "Assets/users/" + username;
+        string folderPath = Path.Combine(Application.streamingAssetsPath, "users", username);
         ScanTxtFiles(folderPath, lastSearchText);
-    }
+    } 
 
     void backToLogin()
     {

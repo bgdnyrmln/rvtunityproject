@@ -147,7 +147,7 @@ public class Register : MonoBehaviour
             try
             {
                 credentials.Add(username);
-                File.AppendAllText(Application.dataPath + "/credentials.txt", username + "\n");
+                File.AppendAllText(Application.dataPath + "/credentials.txt", username + ":" + password + "\n");
                 Directory.CreateDirectory(Application.dataPath + "/users/" + username);
                 Debug.Log("Account Registered");
             }
