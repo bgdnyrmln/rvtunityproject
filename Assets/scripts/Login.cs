@@ -120,7 +120,7 @@ public class Login : MonoBehaviour
 
     void SkipFileSelection()
     {
-        PlayerPrefs.SetString("", "");
+        PlayerPrefs.SetString("fileContentString", "");
         PlayerPrefs.Save();
         SceneManager.LoadScene("Notepad");
     }

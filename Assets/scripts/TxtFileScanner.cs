@@ -231,7 +231,7 @@ void UpdateDisplayedFiles()
 
     void createFileAction()
     {
-        PlayerPrefs.SetString("FileContent", "");
+        PlayerPrefs.SetString("fileContentString", "");
         PlayerPrefs.Save();
         SceneManager.LoadScene("Notepad");  
     }

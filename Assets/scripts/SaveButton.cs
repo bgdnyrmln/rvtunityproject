@@ -16,10 +16,7 @@ public class SaveLoad : MonoBehaviour
 
     void Start()
     {
-        string savedNoteContent = PlayerPrefs.GetString("FileContent", "");
-        ourNote.GetComponent<Text>().text = savedNoteContent;
         backToLogin.onClick.AddListener(GoToLoginScene);
-
     }
 
     public void SaveNote()
