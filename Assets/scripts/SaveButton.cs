@@ -13,10 +13,12 @@ public class SaveLoad : MonoBehaviour
     public GameObject saveAnim;
     public GameObject errorSaveAnim;
     public Button backToLogin;
+    public Button backToFileChoose;
 
     void Start()
     {
         backToLogin.onClick.AddListener(GoToLoginScene);
+        backToFileChoose.onClick.AddListener(GoToFileScene);
     }
 
     public void SaveNote()
@@ -54,5 +56,12 @@ public class SaveLoad : MonoBehaviour
     {
         SceneManager.LoadScene("Login");
     }
+
+    void GoToFileScene()
+        {
+        string username = PlayerPrefs.GetString("Username", "UnknownUser");
+        TxtFileScanner.username = username;
+        SceneManager.LoadScene("FileChoose");
+        }
 
 }

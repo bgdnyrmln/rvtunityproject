@@ -1598,6 +1598,7 @@ MonoBehaviour:
   saveAnim: {fileID: 145715174}
   errorSaveAnim: {fileID: 198681383}
   backToLogin: {fileID: 2118526722}
+  backToFileChoose: {fileID: 134960524}
 --- !u!114 &933696279
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2704,7 +2705,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -6.736145, y: -20.284698}
+  m_AnchoredPosition: {x: -6.736084, y: -20.284668}
   m_SizeDelta: {x: 1579.2258, y: 1085.2388}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2128448496
