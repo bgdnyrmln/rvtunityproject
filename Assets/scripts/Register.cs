@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -26,13 +28,13 @@ public class Register : MonoBehaviour
         goToLoginButton.onClick.AddListener(GoToLoginScene);
         togglePasswordVisibilityButton.onClick.AddListener(TogglePasswordVisibility);
 
-        if (File.Exists(Application.dataPath + "/credentials.txt"))
+        if (File.Exists(Application.dataPath + "/credentials.csv"))
         {
-            credentials = new ArrayList(File.ReadAllLines(Application.dataPath + "/credentials.txt"));
+            credentials = new ArrayList(File.ReadAllLines(Application.dataPath + "/credentials.csv"));
         }
         else
         {
-            File.WriteAllText(Application.dataPath + "/credentials.txt", "");
+            File.WriteAllText(Application.dataPath + "/credentials.csv", "");
         }
     }
 
@@ -146,8 +148,12 @@ public class Register : MonoBehaviour
         {
             try
             {
+                // Hash the password
+                string hashedPassword = HashPassword(password);
+
                 credentials.Add(username);
-                File.AppendAllText(Application.dataPath + "/credentials.txt", username + ":" + password + "\n");
+                // Save the hashed username and password
+                File.AppendAllText(Application.dataPath + "/credentials.csv", username + "," + hashedPassword + "\n");
                 Directory.CreateDirectory(Application.dataPath + "/users/" + username);
                 Debug.Log("Account Registered");
             }
@@ -155,6 +161,23 @@ public class Register : MonoBehaviour
             {
                 Debug.Log(e.Message);
             }
+        }
+    }
+
+    string HashPassword(string password)
+    {
+        using (SHA256 sha256 = SHA256.Create())
+        {
+            // Compute hash from the password string
+            byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+            // Convert byte array to a string representation
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < hashedBytes.Length; i++)
+            {
+                builder.Append(hashedBytes[i].ToString("x2"));
+            }
+            return builder.ToString();
         }
     }
 
@@ -180,7 +203,6 @@ public class Register : MonoBehaviour
         while (myLogQueue.Count > qsize)
             myLogQueue.Dequeue();
     }
-
 
     void Update()  // Update is called every frame
     {

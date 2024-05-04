@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using UnityEditor;
-
 
 public class Login : MonoBehaviour
 {
-
     public InputField usernameInput;
     public InputField passwordInput;
     public Button loginButton;
@@ -23,17 +21,15 @@ public class Login : MonoBehaviour
     public uint qsize = 1;
     ArrayList credentials;
 
-
-    // Start is called before the first frame update
     void Start()
     {
         loginButton.onClick.AddListener(login);
         goToRegisterButton.onClick.AddListener(moveToRegister);
         togglePasswordVisibilityButton.onClick.AddListener(TogglePasswordVisibility);
 
-        if (File.Exists(Application.dataPath + "/credentials.txt"))
+        if (File.Exists(Application.dataPath + "/credentials.csv"))
         {
-            credentials = new ArrayList(File.ReadAllLines(Application.dataPath + "/credentials.txt"));
+            credentials = new ArrayList(File.ReadAllLines(Application.dataPath + "/credentials.csv"));
         }
         else
         {
@@ -46,51 +42,74 @@ public class Login : MonoBehaviour
         skipButton.onClick.AddListener(SkipFileSelection);
     }
 
-
-
-    // Update is called once per frame
     void login()
-{
-    bool isExists = false;
-
-    // Check if the credentials file exists
-    if (File.Exists(Application.dataPath + "/credentials.txt"))
     {
-        ArrayList credentials = new ArrayList(File.ReadAllLines(Application.dataPath + "/credentials.txt"));
+        bool isAuthenticated = false;
 
-        foreach (var i in credentials)
+        // Check if the credentials file exists
+        if (File.Exists(Application.dataPath + "/credentials.csv"))
         {
-            string line = i.ToString();
-            int delimiterIndex = line.IndexOf(":");
-            if (delimiterIndex != -1 && delimiterIndex < line.Length - 1)
-            {
-                string storedUsername = line.Substring(0, delimiterIndex);
-                string storedPassword = line.Substring(delimiterIndex + 1);
+            // Read all lines from the credentials file
+            ArrayList credentials = new ArrayList(File.ReadAllLines(Application.dataPath + "/credentials.csv"));
 
-                if (storedUsername.Equals(usernameInput.text) && storedPassword.Equals(passwordInput.text))
+            // Iterate through each line in the file
+            foreach (var credential in credentials)
+            {
+                string line = credential.ToString();
+                int delimiterIndex = line.IndexOf(",");
+
+                // If the delimiter exists and not at the end of the line
+                if (delimiterIndex != -1 && delimiterIndex < line.Length - 1)
                 {
-                    isExists = true;
-                    break;
+                    // Extract stored username and hashed password
+                    string storedUsername = line.Substring(0, delimiterIndex);
+                    string storedHashedPassword = line.Substring(delimiterIndex + 1);
+
+                    // Hash the password entered by the user
+                    string enteredHashedPassword = HashPassword(passwordInput.text);
+
+                    // Compare stored hashed password with entered hashed password
+                    if (storedUsername.Equals(usernameInput.text) && storedHashedPassword.Equals(enteredHashedPassword))
+                    {
+                        isAuthenticated = true;
+                        break; // Exit the loop if authenticated
+                    }
                 }
             }
         }
-    }
-    else
-    {
-        Debug.Log("Credential file doesn't exist");
+        else
+        {
+            Debug.Log("Credential file doesn't exist");
+        }
+
+        if (isAuthenticated)
+        {
+            Debug.Log($"Logging in '{usernameInput.text}'");
+            PlayerPrefs.SetString("Username", usernameInput.text); // Save username
+            fileSelectionPanel.SetActive(true); // Show file selection panel
+        }
+        else
+        {
+            Debug.Log("Incorrect credentials");
+        }
     }
 
-    if (isExists)
+    string HashPassword(string password)
     {
-        Debug.Log($"Logging in '{usernameInput.text}'");
-        PlayerPrefs.SetString("Username", usernameInput.text); // Save username
-        fileSelectionPanel.SetActive(true); // Show file selection panel
+        using (SHA256 sha256 = SHA256.Create())
+        {
+            // Compute hash from the password string
+            byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+            // Convert byte array to a string representation
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < hashedBytes.Length; i++)
+            {
+                builder.Append(hashedBytes[i].ToString("x2"));
+            }
+            return builder.ToString();
+        }
     }
-    else
-    {
-        Debug.Log("Incorrect credentials");
-    }
-}
 
     void TogglePasswordVisibility()
     {
@@ -111,6 +130,7 @@ public class Login : MonoBehaviour
     {
         SceneManager.LoadScene("Register");
     }
+
     void OpenExistingFile()
     {
         string username = PlayerPrefs.GetString("Username", "UnknownUser");
@@ -125,18 +145,20 @@ public class Login : MonoBehaviour
         SceneManager.LoadScene("Notepad");
     }
 
-
     Queue myLogQueue = new Queue();
 
-    void OnEnable() {
+    void OnEnable()
+    {
         Application.logMessageReceived += HandleLog;
     }
 
-    void OnDisable() {
+    void OnDisable()
+    {
         Application.logMessageReceived -= HandleLog;
     }
 
-    void HandleLog(string logString, string stackTrace, LogType type) {
+    void HandleLog(string logString, string stackTrace, LogType type)
+    {
         myLogQueue.Enqueue(logString);
         if (type == LogType.Exception)
             myLogQueue.Enqueue(stackTrace);
@@ -144,8 +166,7 @@ public class Login : MonoBehaviour
             myLogQueue.Dequeue();
     }
 
-
-    void Update()  // Update is called every frame
+    void Update()
     {
         // Update the text element with the latest log messages
         string logText = "";
@@ -155,5 +176,4 @@ public class Login : MonoBehaviour
         }
         logtext.text = logText;
     }
-
 }
