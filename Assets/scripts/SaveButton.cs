@@ -9,6 +9,9 @@ using UnityEngine.SceneManagement;
 public class SaveLoad : MonoBehaviour
 {
     public string theText;
+    public string fileName;
+    public string username;
+    public GameObject filenameholder;
     public GameObject ourNote;
     public GameObject saveAnim;
     public GameObject errorSaveAnim;
@@ -17,19 +20,29 @@ public class SaveLoad : MonoBehaviour
 
     void Start()
     {
+        username = PlayerPrefs.GetString("Username", "UnknownUser");
         backToLogin.onClick.AddListener(GoToLoginScene);
         backToFileChoose.onClick.AddListener(GoToFileScene);
     }
 
     public void SaveNote()
     {
+        fileName = filenameholder.GetComponent<Text>().text;
+        switch (fileName)
+        {
+            case "":
+                PlayerPrefs.SetString("NoteContents", theText);
+                fileName = DateTime.Now.ToString("yyyyMMdd_HHmmss") + "_" + username + ".txt";
+                break;
+            default:
+                fileName = fileName + ".txt";            
+                break;
+        }
+
+
         theText = ourNote.GetComponent<Text>().text;
-        PlayerPrefs.SetString("NoteContents", theText);
 
-        string username = PlayerPrefs.GetString("Username", "UnknownUser");
-        string fileName = DateTime.Now.ToString("yyyyMMdd_HHmmss") + "_" + username + ".txt";
-
-        if (FileSaver.SaveText(theText, fileName))
+        if (FileSaver.SaveText(theText, fileName, username))
         {
             StartCoroutine(SaveTextRoll());
         }

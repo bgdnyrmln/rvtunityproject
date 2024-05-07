@@ -6,6 +6,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System.Linq;
 
 public class Register : MonoBehaviour
 {
@@ -90,8 +91,32 @@ public class Register : MonoBehaviour
 
     bool IsUsernameValid(string username)
     {
-        // Username should not contain special symbols
-        return !string.IsNullOrWhiteSpace(username) && !ContainsSpecialSymbols(username);
+        // Username should not contain special symbols, should be composed of non-capital letters and numbers (with numbers not alone)
+        return !string.IsNullOrWhiteSpace(username) && !ContainsSpecialSymbols(username) && IsValidUsernameFormat(username);
+    }
+
+    bool IsValidUsernameFormat(string username)
+    {
+        bool hasLetter = false;
+        bool hasNumber = false;
+
+        foreach (char c in username)
+        {
+            if (char.IsLetter(c) && !char.IsUpper(c)) // Non-capital letter
+            {
+                hasLetter = true;
+            }
+            else if (char.IsDigit(c))
+            {
+                hasNumber = true;
+            }
+            else
+            {
+                return false; // Contains special symbol or capital letter
+            }
+        }
+
+        return hasLetter && (hasNumber || !username.Any(char.IsDigit)); // Numbers not alone
     }
 
     bool IsPasswordValid(string password)

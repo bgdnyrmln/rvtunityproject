@@ -4,8 +4,7 @@ using System.IO;
 
 public class FileSaver
 {
-    public static string username = PlayerPrefs.GetString("Username", "UnknownUser");
-    public static bool SaveText(string text, string fileName)
+    public static bool SaveText(string text, string fileName, string username)
     {
         try
         {
