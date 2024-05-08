@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Collections;
-using UnityEngine.SceneManagement;
+
 
 
 
@@ -15,14 +15,10 @@ public class SaveLoad : MonoBehaviour
     public GameObject ourNote;
     public GameObject saveAnim;
     public GameObject errorSaveAnim;
-    public Button backToLogin;
-    public Button backToFileChoose;
 
     void Start()
     {
         username = PlayerPrefs.GetString("Username", "UnknownUser");
-        backToLogin.onClick.AddListener(GoToLoginScene);
-        backToFileChoose.onClick.AddListener(GoToFileScene);
     }
 
     public void SaveNote()
@@ -65,16 +61,4 @@ public class SaveLoad : MonoBehaviour
         yield return new WaitForSeconds(1);
         errorSaveAnim.GetComponent<Animator>().Play("New State");
     }
-    void GoToLoginScene()
-    {
-        SceneManager.LoadScene("Login");
-    }
-
-    void GoToFileScene()
-        {
-        string username = PlayerPrefs.GetString("Username", "UnknownUser");
-        TxtFileScanner.username = username;
-        SceneManager.LoadScene("FileChoose");
-        }
-
 }

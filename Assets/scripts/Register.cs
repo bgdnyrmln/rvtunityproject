@@ -10,6 +10,7 @@ using System.Linq;
 
 public class Register : MonoBehaviour
 {
+    // Input fields and buttons for user registration.
     public InputField usernameInput;
     public InputField passwordInput;
     public Button registerButton;
@@ -17,18 +18,21 @@ public class Register : MonoBehaviour
     public Button togglePasswordVisibilityButton;
     public Text logtext = null;
 
+    // Queue size for log messages.
     public uint qsize = 1;
 
-    ArrayList credentials;
-    bool usernameInvalid = false;
-    bool passwordInvalid = false;
+    ArrayList credentials; // List to store registered usernames.
+    bool usernameInvalid = false; // Flag to indicate invalid username.
+    bool passwordInvalid = false; // Flag to indicate invalid password.
 
     void Start()
     {
+        // Add listeners to buttons for their click events.
         registerButton.onClick.AddListener(ValidateAndRegister);
         goToLoginButton.onClick.AddListener(GoToLoginScene);
         togglePasswordVisibilityButton.onClick.AddListener(TogglePasswordVisibility);
 
+        // Initialize credentials list.
         if (File.Exists(Application.dataPath + "/credentials.csv"))
         {
             credentials = new ArrayList(File.ReadAllLines(Application.dataPath + "/credentials.csv"));
@@ -39,11 +43,13 @@ public class Register : MonoBehaviour
         }
     }
 
+    // Function to switch to the login scene.
     void GoToLoginScene()
     {
         SceneManager.LoadScene("Login");
     }
 
+    // Function to toggle password visibility.
     void TogglePasswordVisibility()
     {
         passwordInput.contentType = passwordInput.contentType == InputField.ContentType.Password ?
@@ -52,6 +58,7 @@ public class Register : MonoBehaviour
         passwordInput.text = passwordInput.text;
     }
 
+    // Function to validate input fields and register the user.
     void ValidateAndRegister()
     {
         string username = usernameInput.text;
@@ -61,6 +68,7 @@ public class Register : MonoBehaviour
         usernameInvalid = false;
         passwordInvalid = false;
 
+        // Validate username and password
         if (!IsUsernameValid(username))
         {
             usernameInvalid = true;
@@ -71,12 +79,14 @@ public class Register : MonoBehaviour
             passwordInvalid = true;
         }
 
+        // Register user if input is valid
         if (!usernameInvalid && !passwordInvalid)
         {
             RegisterUser(username, password);
         }
         else
         {
+            // Log error messages for invalid input
             if (usernameInvalid)
             {
                 Debug.Log("Invalid username.");
@@ -89,12 +99,13 @@ public class Register : MonoBehaviour
         }
     }
 
+    // Function to check if username is valid.
     bool IsUsernameValid(string username)
     {
-        // Username should not contain special symbols, should be composed of non-capital letters and numbers (with numbers not alone)
         return !string.IsNullOrWhiteSpace(username) && !ContainsSpecialSymbols(username) && IsValidUsernameFormat(username);
     }
 
+    // Function to validate username format.
     bool IsValidUsernameFormat(string username)
     {
         bool hasLetter = false;
@@ -119,26 +130,15 @@ public class Register : MonoBehaviour
         return hasLetter && (hasNumber || !username.Any(char.IsDigit)); // Numbers not alone
     }
 
+    // Function to check if password is valid.
     bool IsPasswordValid(string password)
     {
-        // Password should be at least 8 characters long and contain at least one uppercase letter
-        if (string.IsNullOrWhiteSpace(password))
-        {
-            return false;
-        }
-        else if (password.Length < 8 || !ContainsUpperCase(password))
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+        return !string.IsNullOrWhiteSpace(password) && password.Length >= 8 && ContainsUpperCase(password);
     }
 
+    // Function to check if string contains special symbols.
     bool ContainsSpecialSymbols(string str)
     {
-        // Check if the string contains any special symbols
         foreach (char c in str)
         {
             if (!char.IsLetterOrDigit(c))
@@ -149,9 +149,9 @@ public class Register : MonoBehaviour
         return false;
     }
 
+    // Function to check if string contains uppercase letter.
     bool ContainsUpperCase(string str)
     {
-        // Check if the string contains at least one uppercase letter
         foreach (char c in str)
         {
             if (char.IsUpper(c))
@@ -162,6 +162,7 @@ public class Register : MonoBehaviour
         return false;
     }
 
+    // Function to register the user.
     void RegisterUser(string username, string password)
     {
         bool isExists = credentials.Contains(username);
@@ -176,9 +177,11 @@ public class Register : MonoBehaviour
                 // Hash the password
                 string hashedPassword = HashPassword(password);
 
+                // Add username to credentials list
                 credentials.Add(username);
-                // Save the hashed username and password
+                // Save username and hashed password to file
                 File.AppendAllText(Application.dataPath + "/credentials.csv", username + "," + hashedPassword + "\n");
+                // Create user directory
                 Directory.CreateDirectory(Application.dataPath + "/users/" + username);
                 Debug.Log("Account Registered");
             }
@@ -189,14 +192,13 @@ public class Register : MonoBehaviour
         }
     }
 
+    // Function to hash the password.
     string HashPassword(string password)
     {
         using (SHA256 sha256 = SHA256.Create())
         {
-            // Compute hash from the password string
             byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
 
-            // Convert byte array to a string representation
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i < hashedBytes.Length; i++)
             {
@@ -208,6 +210,7 @@ public class Register : MonoBehaviour
 
     // Log handling methods...
 
+    // Queue to store log messages.
     Queue myLogQueue = new Queue();
 
     void OnEnable()
@@ -220,6 +223,7 @@ public class Register : MonoBehaviour
         Application.logMessageReceived -= HandleLog;
     }
 
+    // Function to handle log messages.
     void HandleLog(string logString, string stackTrace, LogType type)
     {
         myLogQueue.Enqueue(logString);
@@ -229,7 +233,8 @@ public class Register : MonoBehaviour
             myLogQueue.Dequeue();
     }
 
-    void Update()  // Update is called every frame
+    // Update is called every frame
+    void Update()
     {
         // Update the text element with the latest log messages
         string logText = "";
