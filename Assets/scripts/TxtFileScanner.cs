@@ -180,6 +180,7 @@ public class TxtFileScanner : MonoBehaviour
 
         // Scan files based on search text.
         ScanTxtFiles(folderPath, searchText);
+        UpdatePagination();
     }
 
     // Update pagination controls based on total files count.
